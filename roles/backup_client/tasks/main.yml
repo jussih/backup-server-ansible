@@ -1,0 +1,18 @@
+---
+- name: Client "{{ client_name }}" - Create client user without password
+  user:
+    name: "{{ client_name }}"
+
+- name: Client "{{ client_name }}" - Set up authorized keys for client user
+  authorized_key:
+    user: "{{ client_name }}"
+    state: present
+    key: "{{ ssh_pubkey }}"
+      
+- name: Client "{{ client_name }}" - Directory for client backups
+  file:
+    path: "{{ backup_drive_mount_point }}/{{ backup_relative_path }}/{{ client_name }}"
+    state: directory
+    owner: "{{ client_name }}"
+    group: "{{ client_name }}"
+    mode: 0700

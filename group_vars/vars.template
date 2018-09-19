@@ -1,0 +1,8 @@
+---
+backup_drive_uuid: "[uuid]"
+backup_drive_fstype: "ext4"
+backup_drive_mount_point: "/backup"
+backup_relative_path: "machines"
+user_ssh_pubkey: "[ssh-rsa asdf123]"
+desktop_ssh_pubkey: "[ssh-rsa asdf456]"
+laptop_ssh_pubkey: "[ssh-rsa asdf789]"

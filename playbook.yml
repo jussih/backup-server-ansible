@@ -1,0 +1,11 @@
+---
+- name: Provision a backup NAS server on Raspberry Pi
+  hosts: backup_server
+  remote_user: user
+  become: yes
+  vars_files:
+    - group_vars/vars
+  roles:
+    - backup_nas
+    - {role: backup_client, client_name: "desktop", ssh_pubkey: "{{ desktop_ssh_pubkey }}"}
+    - {role: backup_client, client_name: "laptop", ssh_pubkey: "{{ laptop_ssh_pubkey }}"}

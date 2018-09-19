@@ -1,0 +1,80 @@
+---
+- name: Make sure we have a 'wheel' group
+  group:
+    name: wheel
+    state: present
+
+- name: Allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: /usr/sbin/visudo -cf %s
+
+- name: Create priviledged user
+  user:
+    name: user
+    groups: adm,sudo,users,wheel
+    shell: /bin/bash
+
+- name: Set up authorized keys for user "user"
+  authorized_key:
+    user: user
+    state: present
+    key: "{{ user_ssh_pubkey }}"
+
+- name: Harden SSH
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "^PasswordAuthentication"
+      line: "PasswordAuthentication no"
+    - regexp: "^PermitRootLogin"
+      line: "PermitRootLogin no"
+    - regexp: "^ChallengeResponseAuthentication"
+      line: "ChallengeResponseAuthentication no"
+  notify: restart ssh
+
+- name: Delete default raspbian user "pi"
+  user:
+    name: pi
+    state: absent
+
+- name: Mount backup drive
+  mount:
+    path: "{{ backup_drive_mount_point }}"
+    src: UUID={{ backup_drive_uuid }}
+    fstype: {{ backup_drive_fstype }}
+    state: mounted
+
+- name: Directory for machine backups
+  file:
+    path: "{{ backup_drive_mount_point }}/{{ backup_relative_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+
+- name: Install Uncomplicated FireWall (ufw)
+  apt:
+    name: ufw
+    state: present
+    update_cache: yes
+
+- name: Firewall config - enable and deny all by default
+  ufw:
+    state: enabled
+    policy: deny
+
+- name: Firewall config - allow port 22 from 192.168.0.0/16
+  ufw:
+    rule: allow
+    port: 22
+    src: 192.168.0.0/16
+
+
+#https://eltechs.com/raspberry-pi-nas-guide/
