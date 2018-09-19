@@ -48,7 +48,7 @@
   mount:
     path: "{{ backup_drive_mount_point }}"
     src: UUID={{ backup_drive_uuid }}
-    fstype: {{ backup_drive_fstype }}
+    fstype: "{{ backup_drive_fstype }}"
     state: mounted
 
 - name: Directory for machine backups
